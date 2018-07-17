@@ -5,6 +5,7 @@ import Model exposing (..)
 import View exposing (view)
 import API exposing (getList, addToList)
 import List exposing (..)
+import Time exposing (Time, second)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -28,9 +29,12 @@ update msg model =
             else
                 (model, Cmd.none)
 
+        Tick _ ->
+            (model, getList)
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every (second*5) Tick
 
 init : (Model, Cmd Msg)
 init =
