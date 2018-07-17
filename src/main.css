@@ -1,0 +1,25 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: sans-serif;
+}
+
+input#entryInput {
+	margin-bottom: 15px;
+	width: 100%;
+}
+
+.entry {
+	margin-bottom: 15px;
+	display: flex;
+	align-items: center;
+}
+
+.entry > :first-child {
+	opacity: .7;
+	font-size: 85%;
+	margin-right: 10px;
+	white-space: nowrap;
+}
