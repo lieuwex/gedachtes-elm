@@ -16,6 +16,8 @@ type alias Entries = List Entry
 type alias Model =
     { entries: Entries
     , input: String
+    , editInput: String
+    , editing: Maybe Id
     }
 
 type ApiMsg
@@ -26,8 +28,10 @@ type ApiMsg
 
 type Msg
     = ApiMsg ApiMsg
-    | Input String
+    | EditInput String
+    | EditKeyDown Int
+    | NewInput String
+    | NewKeyDown Int
     | Delete Entry
     | Change Entry --TODO
-    | KeyDown Int
     | Tick Time

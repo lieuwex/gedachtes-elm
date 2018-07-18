@@ -3,7 +3,7 @@ module Main exposing (..)
 import Html exposing (program)
 import Model exposing (..)
 import View exposing (view)
-import API exposing (getEntries, addEntry, removeEntry)
+import API exposing (getEntries, addEntry, removeEntry, changeEntry)
 import List exposing (..)
 import Time exposing (Time, second)
 
@@ -39,16 +39,47 @@ updateApiMsg msg model =
                 in ({ model | entries = entries }, Cmd.none)
             Err _ -> (model, Cmd.none)
 
+updateEditing : Msg -> Model -> (Model, Cmd Msg)
+updateEditing msg model =
+    case model.editing of
+        Nothing -> (model, Cmd.none)
+        Just id -> case msg of
+            EditInput str ->
+                ({ model | editInput = str }, Cmd.none)
+
+            EditKeyDown key ->
+                if key /= 13 then
+                    (model, Cmd.none)
+                else
+                    let
+                        m = { model | editInput = "", editing = Nothing }
+                        trimmed = String.trim model.editInput
+                        fn =
+                            if String.isEmpty trimmed then
+                                (\id _ -> removeEntry id)
+                            else
+                                changeEntry
+                    in
+                        (m, fn id model.editInput |> Cmd.map ApiMsg)
+
+            _ -> (model, Cmd.none)
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         ApiMsg apiMsg ->
             updateApiMsg apiMsg model
 
-        Input str ->
+        -- TODO
+        EditInput _ ->
+            updateEditing msg model
+        EditKeyDown _ ->
+            updateEditing msg model
+
+        NewInput str ->
             ({ model | input = str }, Cmd.none)
 
-        KeyDown key ->
+        NewKeyDown key ->
             if key == 13 then
                 ({ model | input = "" }, addEntry model.input |> Cmd.map ApiMsg)
             else
@@ -59,8 +90,12 @@ update msg model =
             (model, removeEntry entry.id |> Cmd.map ApiMsg)
 
         Change entry ->
-            --TODO
-            (model, Cmd.none)
+            let m =
+                { model |
+                    editing = Just entry.id,
+                    editInput = entry.content
+                }
+            in (m, Cmd.none)
 
         Tick _ ->
             (model, Cmd.map ApiMsg getEntries)
@@ -71,7 +106,7 @@ subscriptions model =
 
 init : (Model, Cmd Msg)
 init =
-    (Model [] "", Cmd.map ApiMsg getEntries)
+    (Model [] "" "" Nothing, Cmd.map ApiMsg getEntries)
 
 main =
     program

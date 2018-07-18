@@ -15,11 +15,28 @@ date d =
     let formatted = format "%Y-%m-%d %H:%M:%S" d
     in div [] [text formatted]
 
-entry : Entry -> Html msg
-entry x =
-    div [ class "entry" ]
-    [ date x.date
-    , div [] [text x.content]]
+entry : Model -> Entry -> Html Msg
+entry model x =
+    let
+        editing =
+            model.editing
+            |> Maybe.map (\id -> x.id == id)
+            |> Maybe.withDefault False
+    in
+        div [ class "entry" ]
+        [ date x.date
+        , div [onClick (Change x)]
+            [
+            if editing then
+                input
+                    [ value model.editInput
+                    , onInput EditInput
+                    , onKeyDown EditKeyDown
+                    ] []
+            else
+                text x.content
+            ]
+        ]
 
 view : Model -> Html Msg
 view model =
@@ -28,15 +45,15 @@ view model =
             [ h1 [] [text "entries"]
             , input
                 [ id "entryInput"
-                , onInput Input
-                , onKeyDown KeyDown
+                , onInput NewInput
+                , onKeyDown NewKeyDown
                 , value model.input
                 ] []
             ]
         entries =
             model.entries
             |> List.reverse
-            |> List.map entry
+            |> List.map (entry model)
     in
         List.append content entries
         |> div []

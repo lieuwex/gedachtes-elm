@@ -6,9 +6,12 @@ body {
 	font-family: sans-serif;
 }
 
+input {
+	width: 100%;
+}
+
 input#entryInput {
 	margin-bottom: 15px;
-	width: 100%;
 }
 
 .entry {
@@ -22,4 +25,8 @@ input#entryInput {
 	font-size: 85%;
 	margin-right: 10px;
 	white-space: nowrap;
+}
+
+.entry > :last-child {
+	flex: 1;
 }

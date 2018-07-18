@@ -27,8 +27,7 @@ addEntry body =
 removeEntry : Id -> Cmd ApiMsg
 removeEntry id =
     let
-        sId = toString id
-        url = "/entries/" ++ sId
+        url = "/entries/" ++ id
     in
         HttpBuilder.delete url
         |> withExpect (Http.expectJson entryDecoder)
@@ -37,8 +36,7 @@ removeEntry id =
 changeEntry : Id -> Body -> Cmd ApiMsg
 changeEntry id body =
     let
-        sId = toString id
-        url = "/entries/" ++ sId
+        url = "/entries/" ++ id
         trimmed = String.trim body
     in
         HttpBuilder.put url
