@@ -17,7 +17,7 @@ updateApiMsg msg model =
         NewEntry res -> case res of
             Ok entry ->
                 let entries = append model.entries [entry]
-                in ({ model | entries = entries }, Cmd.none)
+                in ({ model | entries = entries, input = "" }, Cmd.none)
             Err _ -> (model, Cmd.none)
 
         ChangedEntry res -> case res of
@@ -81,7 +81,7 @@ update msg model =
 
         NewKeyDown key ->
             if key == 13 then
-                ({ model | input = "" }, addEntry model.input |> Cmd.map ApiMsg)
+                (model, addEntry model.input |> Cmd.map ApiMsg)
             else
                 (model, Cmd.none)
 
