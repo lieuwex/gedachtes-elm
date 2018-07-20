@@ -7,6 +7,8 @@ import Json.Decode
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Util exposing (sameDate)
+import List.Extra exposing (groupWhile)
 
 -- VIEW
 
@@ -53,7 +55,10 @@ view model =
         entries =
             model.entries
             |> List.reverse
-            |> List.map (entry model)
+            |> groupWhile (\a b -> sameDate a.date b.date)
+            |> List.map (\x -> hr [] [] :: List.map (entry model) x)
+            |> List.concat
+            |> List.drop 1
     in
         List.append content entries
         |> div []

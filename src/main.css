@@ -30,3 +30,9 @@ input#entryInput {
 .entry > :last-child {
 	flex: 1;
 }
+
+hr {
+	border: 1px white solid;
+	margin-bottom: 30px;
+	margin-top: 15px;
+}
