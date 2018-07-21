@@ -20,10 +20,10 @@ date d =
 entry : Model -> Entry -> Html Msg
 entry model x =
     let
-        editing =
-            model.editing
-            |> Maybe.map (\id -> x.id == id)
-            |> Maybe.withDefault False
+        (editing, editInput) =
+            case model.state of
+                Editing id input -> (id == x.id, input)
+                _ -> (False, "")
     in
         div [ class "entry" ]
         [ date x.date
@@ -31,7 +31,7 @@ entry model x =
             [
             if editing then
                 input
-                    [ value model.editInput
+                    [ value editInput
                     , onInput EditInput
                     , onKeyDown EditKeyDown
                     ] []

@@ -13,11 +13,14 @@ type alias Entry =
     }
 type alias Entries = List Entry
 
+type State
+    = Normal
+    | Editing Id Body
+
 type alias Model =
     { entries: Entries
     , input: String
-    , editInput: String
-    , editing: Maybe Id
+    , state: State
     }
 
 type ApiMsg

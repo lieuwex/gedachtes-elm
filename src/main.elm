@@ -52,18 +52,18 @@ updateApiMsg msg model =
 
 updateEditing : Msg -> Model -> (Model, Cmd Msg)
 updateEditing msg model =
-    case model.editing of
-        Nothing -> (model, Cmd.none)
-        Just id -> case msg of
+    case model.state of
+        Normal -> (model, Cmd.none)
+        Editing id input -> case msg of
             EditInput str ->
-                ({ model | editInput = str }, Cmd.none)
+                ({ model | state = Editing id str }, Cmd.none)
 
             EditKeyDown key ->
                 if key /= 13 then
                     (model, Cmd.none)
                 else
-                    let m = { model | editInput = "", editing = Nothing }
-                    in (m, edit id model.editInput)
+                    let m = { model | state = Normal }
+                    in (m, edit id input)
 
             _ -> (model, Cmd.none)
 
@@ -100,12 +100,7 @@ update msg model =
             (model, removeEntry entry.id |> Cmd.map ApiMsg)
 
         Change entry ->
-            let m =
-                { model |
-                    editing = Just entry.id,
-                    editInput = entry.content
-                }
-            in (m, Cmd.none)
+            ({ model | state = Editing entry.id entry.content }, Cmd.none)
 
         Tick _ ->
             (model, Cmd.map ApiMsg getEntries)
@@ -116,7 +111,7 @@ subscriptions model =
 
 init : (Model, Cmd Msg)
 init =
-    (Model [] "" "" Nothing, Cmd.map ApiMsg getEntries)
+    (Model []  "" Normal, Cmd.map ApiMsg getEntries)
 
 main =
     program
