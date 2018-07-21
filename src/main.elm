@@ -6,6 +6,17 @@ import View exposing (view)
 import API exposing (getEntries, addEntry, removeEntry, changeEntry)
 import List exposing (..)
 import Time exposing (Time, second)
+import Sed exposing (isValidSed, sed)
+import List.Extra exposing (last)
+
+edit : Id -> Body -> Cmd Msg
+edit id body =
+    let trimmed = String.trim body
+    in Cmd.map ApiMsg <|
+        if String.isEmpty trimmed then
+            removeEntry id
+        else
+            changeEntry id trimmed
 
 updateApiMsg : ApiMsg -> Model -> (Model, Cmd Msg)
 updateApiMsg msg model =
@@ -51,16 +62,8 @@ updateEditing msg model =
                 if key /= 13 then
                     (model, Cmd.none)
                 else
-                    let
-                        m = { model | editInput = "", editing = Nothing }
-                        trimmed = String.trim model.editInput
-                        fn =
-                            if String.isEmpty trimmed then
-                                (\id _ -> removeEntry id)
-                            else
-                                changeEntry
-                    in
-                        (m, fn id model.editInput |> Cmd.map ApiMsg)
+                    let m = { model | editInput = "", editing = Nothing }
+                    in (m, edit id model.editInput)
 
             _ -> (model, Cmd.none)
 
@@ -80,10 +83,17 @@ update msg model =
             ({ model | input = str }, Cmd.none)
 
         NewKeyDown key ->
-            if key == 13 then
-                (model, addEntry model.input |> Cmd.map ApiMsg)
-            else
+            if key /= 13 then -- nop
                 (model, Cmd.none)
+            else if isValidSed model.input then -- edit
+                let x = last model.entries
+                in case x of
+                    Nothing -> (model, Cmd.none)
+                    Just entry ->
+                        let replaced = sed model.input entry.content
+                        in ({ model | input = "" }, edit entry.id replaced)
+            else -- new entry
+                (model, addEntry model.input |> Cmd.map ApiMsg)
 
         Delete entry ->
             --TODO
