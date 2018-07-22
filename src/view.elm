@@ -10,32 +10,27 @@ import Html.Events exposing (..)
 import Util exposing (sameDate)
 import List.Extra exposing (groupWhile)
 
--- VIEW
-
-date : Date -> Html msg
-date d =
-    let formatted = format "%Y-%m-%d %H:%M:%S" d
-    in div [] [text formatted]
+date : Date -> String
+date = format "%Y-%m-%d %H:%M:%S"
 
 entry : Model -> Entry -> Html Msg
 entry model x =
     let
         (editing, editInput) =
             case model.state of
+                Normal -> (False, "")
                 Editing id input -> (id == x.id, input)
-                _ -> (False, "")
     in
         div [ class "entry" ]
-        [ date x.date
+        [ div [] [text (date x.date)]
         , div [onClick (Change x)]
-            [
-            if editing then
+            [ if editing then
                 input
                     [ value editInput
                     , onInput EditInput
                     , onKeyDown EditKeyDown
                     ] []
-            else
+              else
                 text x.content
             ]
         ]
@@ -58,10 +53,9 @@ view model =
             |> groupWhile (\a b -> sameDate a.date b.date)
             |> List.map (\x -> hr [] [] :: List.map (entry model) x)
             |> List.concat
-            |> List.drop 1
+            |> List.drop 1 -- Remove the first <hr>
     in
-        List.append content entries
-        |> div []
+        div [] (List.append content entries)
 
 onKeyDown : (Int -> msg) -> Attribute msg
 onKeyDown tagger =

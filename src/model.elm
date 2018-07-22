@@ -11,20 +11,19 @@ type alias Entry =
     , content: Body
     , date: Date
     }
-type alias Entries = List Entry
 
 type State
     = Normal
     | Editing Id Body
 
 type alias Model =
-    { entries: Entries
+    { entries: List Entry
     , input: String
     , state: State
     }
 
 type ApiMsg
-    = Entries (Result Http.Error Entries)
+    = Entries (Result Http.Error (List Entry))
     | NewEntry (Result Http.Error Entry)
     | ChangedEntry (Result Http.Error Entry)
     | RemovedEntry (Result Http.Error Entry)
@@ -35,6 +34,5 @@ type Msg
     | EditKeyDown Int
     | NewInput String
     | NewKeyDown Int
-    | Delete Entry
-    | Change Entry --TODO
+    | Change Entry
     | Tick Time

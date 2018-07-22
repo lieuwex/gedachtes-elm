@@ -16,18 +16,14 @@ addEntry : Body -> Cmd ApiMsg
 addEntry body =
     let trimmed = String.trim body
     in
-        if String.length trimmed == 0 then
-            Cmd.none
-        else
-            HttpBuilder.post "/entries/"
-            |> withStringBody "text/plain" trimmed
-            |> withExpect (Http.expectJson entryDecoder)
-            |> send NewEntry
+        HttpBuilder.post "/entries/"
+        |> withStringBody "text/plain" trimmed
+        |> withExpect (Http.expectJson entryDecoder)
+        |> send NewEntry
 
 removeEntry : Id -> Cmd ApiMsg
 removeEntry id =
-    let
-        url = "/entries/" ++ id
+    let url = "/entries/" ++ id
     in
         HttpBuilder.delete url
         |> withExpect (Http.expectJson entryDecoder)

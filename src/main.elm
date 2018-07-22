@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Html exposing (program)
 import Model exposing (..)
@@ -22,33 +22,29 @@ updateApiMsg : ApiMsg -> Model -> (Model, Cmd Msg)
 updateApiMsg msg model =
     case msg of
         Entries res -> case res of
-            Ok entries -> ({ model | entries = entries }, Cmd.none)
             Err _ -> (model, Cmd.none)
+            Ok entries -> ({ model | entries = entries }, Cmd.none)
 
         NewEntry res -> case res of
+            Err _ -> (model, Cmd.none)
             Ok entry ->
                 let entries = append model.entries [entry]
                 in ({ model | entries = entries, input = "" }, Cmd.none)
-            Err _ -> (model, Cmd.none)
 
         ChangedEntry res -> case res of
+            Err _ -> (model, Cmd.none)
             Ok entry ->
-                let
-                    fn = (\x ->
-                        if x.id == entry.id then
-                            entry
-                        else
-                            x
-                    )
+                let fn x = if x.id == entry.id
+                           then entry
+                           else x
                     entries = map fn model.entries
                 in ({ model | entries = entries }, Cmd.none)
-            Err _ -> (model, Cmd.none)
 
         RemovedEntry res -> case res of
+            Err _ -> (model, Cmd.none)
             Ok entry ->
                 let entries = filter (\{id} -> id /= entry.id) model.entries
                 in ({ model | entries = entries }, Cmd.none)
-            Err _ -> (model, Cmd.none)
 
 updateEditing : Msg -> Model -> (Model, Cmd Msg)
 updateEditing msg model =
@@ -73,7 +69,6 @@ update msg model =
         ApiMsg apiMsg ->
             updateApiMsg apiMsg model
 
-        -- TODO
         EditInput _ ->
             updateEditing msg model
         EditKeyDown _ ->
@@ -83,7 +78,7 @@ update msg model =
             ({ model | input = str }, Cmd.none)
 
         NewKeyDown key ->
-            if key /= 13 then -- nop
+            if key /= 13 || String.isEmpty model.input then -- nop
                 (model, Cmd.none)
             else if isValidSed model.input then -- edit
                 let x = last model.entries
@@ -94,10 +89,6 @@ update msg model =
                         in ({ model | input = "" }, edit entry.id replaced)
             else -- new entry
                 (model, addEntry model.input |> Cmd.map ApiMsg)
-
-        Delete entry ->
-            --TODO
-            (model, removeEntry entry.id |> Cmd.map ApiMsg)
 
         Change entry ->
             ({ model | state = Editing entry.id entry.content }, Cmd.none)
@@ -111,7 +102,7 @@ subscriptions model =
 
 init : (Model, Cmd Msg)
 init =
-    (Model []  "" Normal, Cmd.map ApiMsg getEntries)
+    (Model [] "" Normal, Cmd.map ApiMsg getEntries)
 
 main =
     program
