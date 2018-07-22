@@ -45,6 +45,7 @@ view model =
                 , onInput NewInput
                 , onKeyDown NewKeyDown
                 , value model.input
+                , autofocus True
                 ] []
             ]
         entries =
