@@ -36,3 +36,11 @@ hr {
 	margin-bottom: 30px;
 	margin-top: 15px;
 }
+
+h1 {
+	display: inline-block;
+}
+#entriesInfo {
+	display: inline-block;
+	float: right;
+}

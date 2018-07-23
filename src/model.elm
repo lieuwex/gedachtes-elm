@@ -20,6 +20,7 @@ type alias Model =
     { entries: List Entry
     , input: String
     , state: State
+    , now: Date
     }
 
 type ApiMsg

@@ -8,6 +8,8 @@ import List exposing (..)
 import Time exposing (Time, second)
 import Sed exposing (isValidSed, sed)
 import List.Extra exposing (last)
+import Date exposing (fromTime)
+import Task
 
 edit : Id -> Body -> Cmd Msg
 edit id body =
@@ -55,11 +57,10 @@ updateEditing msg model =
                 ({ model | state = Editing id str }, Cmd.none)
 
             EditKeyDown key ->
-                if key /= 13 then
-                    (model, Cmd.none)
+                if key == 13 then
+                    ({ model | state = Normal }, edit id input)
                 else
-                    let m = { model | state = Normal }
-                    in (m, edit id input)
+                    (model, Cmd.none)
 
             _ -> (model, Cmd.none)
 
@@ -93,8 +94,8 @@ update msg model =
         Change entry ->
             ({ model | state = Editing entry.id entry.content }, Cmd.none)
 
-        Tick _ ->
-            (model, Cmd.map ApiMsg getEntries)
+        Tick time ->
+            ({ model | now = fromTime time }, Cmd.map ApiMsg getEntries)
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -102,7 +103,15 @@ subscriptions model =
 
 init : (Model, Cmd Msg)
 init =
-    (Model [] "" Normal, Cmd.map ApiMsg getEntries)
+    let
+        m =
+            { entries = []
+            , input = ""
+            , state = Normal
+            , now = fromTime 0
+            }
+    in
+        (m, Task.perform Tick Time.now)
 
 main =
     program

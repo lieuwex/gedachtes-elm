@@ -38,8 +38,18 @@ entry model x =
 view : Model -> Html Msg
 view model =
     let
+        entriesToday =
+            List.filter (\x -> sameDate x.date model.now) model.entries
+
+        entriesInfo =
+            "today: "
+            ++ toString (List.length entriesToday)
+            ++ "/"
+            ++ toString (List.length model.entries)
+
         content =
             [ h1 [] [text "entries"]
+            , div [id "entriesInfo"] [text entriesInfo]
             , input
                 [ id "entryInput"
                 , onInput NewInput
@@ -48,6 +58,7 @@ view model =
                 , autofocus True
                 ] []
             ]
+
         entries =
             model.entries
             |> List.reverse
