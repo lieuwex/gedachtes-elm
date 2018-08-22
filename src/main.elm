@@ -5,11 +5,15 @@ import Model exposing (..)
 import View exposing (view)
 import API exposing (getEntries, addEntry, removeEntry, changeEntry)
 import List exposing (..)
-import Time exposing (Time, second)
+import Time exposing (..)
 import Sed exposing (isValidSed, sed)
 import List.Extra exposing (last)
 import Date exposing (fromTime)
 import Task
+
+clearNewInput : Model -> Model
+clearNewInput model =
+    { model | cleared = True, input = "" }
 
 edit : Id -> Body -> Cmd Msg
 edit id body =
@@ -30,8 +34,8 @@ updateApiMsg msg model =
         NewEntry res -> case res of
             Err _ -> (model, Cmd.none)
             Ok entry ->
-                let entries = append model.entries [entry]
-                in ({ model | entries = entries, input = "" }, Cmd.none)
+                let m = { model | entries = append model.entries [entry] }
+                in (clearNewInput m, Cmd.none)
 
         ChangedEntry res -> case res of
             Err _ -> (model, Cmd.none)
@@ -75,6 +79,9 @@ update msg model =
         EditKeyDown _ ->
             updateEditing msg model
 
+        NewFocus ->
+            ({ model | cleared = False }, Cmd.none)
+
         NewInput str ->
             ({ model | input = str }, Cmd.none)
 
@@ -87,7 +94,7 @@ update msg model =
                     Nothing -> (model, Cmd.none)
                     Just entry ->
                         let replaced = sed model.input entry.content
-                        in ({ model | input = "" }, edit entry.id replaced)
+                        in (clearNewInput model, edit entry.id replaced)
             else -- new entry
                 (model, addEntry model.input |> Cmd.map ApiMsg)
 
@@ -99,7 +106,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every (second*5) Tick
+    every (second*5) Tick
 
 init : (Model, Cmd Msg)
 init =
@@ -107,6 +114,7 @@ init =
         m =
             { entries = []
             , input = ""
+            , cleared = False
             , state = Normal
             , now = fromTime 0
             }

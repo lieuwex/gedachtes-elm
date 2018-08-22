@@ -35,6 +35,12 @@ entry model x =
             ]
         ]
 
+withCleared : Model -> List (Attribute Msg) -> List (Attribute Msg)
+withCleared model attributes =
+    case model.cleared of
+        True -> value "" :: attributes
+        False -> attributes
+
 view : Model -> Html Msg
 view model =
     let
@@ -51,12 +57,12 @@ view model =
             [ h1 [] [text "entries"]
             , div [id "entriesInfo"] [text entriesInfo]
             , input
-                [ id "entryInput"
+                (withCleared model [ id "entryInput"
                 , onInput NewInput
                 , onKeyDown NewKeyDown
-                , value model.input
+                , onFocus NewFocus
                 , autofocus True
-                ] []
+                ]) []
             ]
 
         entries =

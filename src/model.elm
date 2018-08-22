@@ -19,6 +19,7 @@ type State
 type alias Model =
     { entries: List Entry
     , input: String
+    , cleared: Bool
     , state: State
     , now: Date
     }
@@ -33,6 +34,7 @@ type Msg
     = ApiMsg ApiMsg
     | EditInput String
     | EditKeyDown Int
+    | NewFocus
     | NewInput String
     | NewKeyDown Int
     | Change Entry
