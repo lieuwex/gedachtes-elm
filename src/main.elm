@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Html exposing (program)
+import Browser exposing (document)
 import Model exposing (..)
 import View exposing (view)
 import API exposing (getEntries, addEntry, removeEntry, changeEntry)
@@ -8,7 +8,6 @@ import List exposing (..)
 import Time exposing (..)
 import Sed exposing (isValidSed, sed)
 import List.Extra exposing (last)
-import Date exposing (fromTime)
 import Task
 
 clearNewInput : Model -> Model
@@ -101,28 +100,32 @@ update msg model =
         Change entry ->
             ({ model | state = Editing entry.id entry.content }, Cmd.none)
 
+        SetZone zone ->
+            ({ model | zone = zone }, Task.perform Tick Time.now)
+
         Tick time ->
-            ({ model | now = fromTime time }, Cmd.map ApiMsg getEntries)
+            ({ model | now = time }, Cmd.map ApiMsg getEntries)
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    every (second*5) Tick
+    every 5000 Tick
 
-init : (Model, Cmd Msg)
-init =
+init : () -> (Model, Cmd Msg)
+init flags =
     let
         m =
             { entries = []
             , input = ""
             , cleared = False
             , state = Normal
-            , now = fromTime 0
+            , now = millisToPosix 0
+            , zone = utc
             }
     in
-        (m, Task.perform Tick Time.now)
+        (m, Task.perform SetZone here)
 
 main =
-    program
+    document
         { init = init
         , view = view
         , update = update

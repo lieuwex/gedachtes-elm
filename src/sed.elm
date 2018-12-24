@@ -4,7 +4,9 @@ import Regex exposing (..)
 
 sedReg : Regex
 sedReg =
-    regex "^s([^\\s\\w])([^\\1]+?)\\1([^\\1]*?)(?:\\1(|ig?|gi?))?$"
+    Maybe.withDefault
+        Regex.never
+        (fromString "^s([^\\s\\w])([^\\1]+?)\\1([^\\1]*?)(?:\\1(|ig?|gi?))?$")
 
 isValidSed : String -> Bool
 isValidSed =
@@ -12,14 +14,15 @@ isValidSed =
 
 sed : String -> String -> String
 sed cmd orig =
-    let matches = find (AtMost 1) sedReg cmd
+    let matches = findAtMost 1 sedReg cmd
     in case matches of
         [] -> orig
         match :: _ -> case match.submatches of
             _ :: Just matcher :: Just replacer :: _ ->
                 let
-                    reg = regex matcher
+                    reg = fromString matcher
                     replaceFn = always replacer
-                in
-                    replace All reg replaceFn orig
+                in case reg of
+                    Just r -> replace r replaceFn orig
+                    Nothing -> orig
             _ -> orig

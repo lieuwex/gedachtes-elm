@@ -7,4 +7,4 @@ dist/main.css: src/main.css
 	cp src/main.css dist/main.css
 
 dist/main.js: src/*.elm
-	elm-make src/main.elm --output $@
+	elm make src/main.elm --output $@

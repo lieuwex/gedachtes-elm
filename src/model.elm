@@ -1,15 +1,14 @@
 module Model exposing (..)
 
-import Date exposing (Date)
+import Time exposing (Posix, Zone)
 import Http
-import Time exposing (Time)
 
 type alias Id = String
 type alias Body = String
 type alias Entry =
     { id: Id
     , content: Body
-    , date: Date
+    , date: Posix
     }
 
 type State
@@ -21,7 +20,8 @@ type alias Model =
     , input: String
     , cleared: Bool
     , state: State
-    , now: Date
+    , now: Posix
+    , zone: Zone
     }
 
 type ApiMsg
@@ -38,4 +38,5 @@ type Msg
     | NewInput String
     | NewKeyDown Int
     | Change Entry
-    | Tick Time
+    | SetZone Zone
+    | Tick Posix

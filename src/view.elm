@@ -1,8 +1,9 @@
 module View exposing (view)
 
+import Browser
 import Model exposing (..)
-import Date exposing (Date)
-import Date.Format exposing (format)
+import Time exposing (Posix, Zone)
+import DateFormat
 import Json.Decode
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -10,8 +11,21 @@ import Html.Events exposing (..)
 import Util exposing (sameDate)
 import List.Extra exposing (groupWhile)
 
-date : Date -> String
-date = format "%Y-%m-%d %H:%M:%S"
+date : Zone -> Posix -> String
+date =
+    DateFormat.format
+        [ DateFormat.yearNumber
+        , DateFormat.text "-"
+        , DateFormat.monthFixed
+        , DateFormat.text "-"
+        , DateFormat.dayOfMonthFixed
+        , DateFormat.text " "
+        , DateFormat.hourMilitaryFixed
+        , DateFormat.text ":"
+        , DateFormat.minuteFixed
+        , DateFormat.text ":"
+        , DateFormat.secondFixed
+        ]
 
 entry : Model -> Entry -> Html Msg
 entry model x =
@@ -22,7 +36,7 @@ entry model x =
                 Editing id input -> (id == x.id, input)
     in
         div [ class "entry" ]
-        [ div [] [text (date x.date)]
+        [ div [] [text (date model.zone x.date)]
         , div [onClick (Change x)]
             [ if editing then
                 input
@@ -41,17 +55,17 @@ withCleared model attributes =
         True -> value "" :: attributes
         False -> attributes
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
     let
         entriesToday =
-            List.filter (\x -> sameDate x.date model.now) model.entries
+            List.filter (\x -> sameDate model.zone x.date model.now) model.entries
 
         entriesInfo =
             "today: "
-            ++ toString (List.length entriesToday)
+            ++ String.fromInt (List.length entriesToday)
             ++ "/"
-            ++ toString (List.length model.entries)
+            ++ String.fromInt (List.length model.entries)
 
         content =
             [ h1 [] [text "entries"]
@@ -67,13 +81,19 @@ view model =
 
         entries =
             model.entries
+            |> List.sortBy (.date >> Time.posixToMillis)
             |> List.reverse
-            |> groupWhile (\a b -> sameDate a.date b.date)
-            |> List.map (\x -> hr [] [] :: List.map (entry model) x)
+            |> groupWhile (\a b -> sameDate model.zone a.date b.date)
+            |> List.map (\(x, xs) -> hr [] [] :: entry model x :: List.map (entry model) xs)
             |> List.concat
             |> List.drop 1 -- Remove the first <hr>
     in
-        div [] (List.append content entries)
+        { title =
+            "thoughts | "
+            ++ String.fromInt (List.length entries)
+            ++ " entries"
+        , body = List.append content entries
+        }
 
 onKeyDown : (Int -> msg) -> Attribute msg
 onKeyDown tagger =

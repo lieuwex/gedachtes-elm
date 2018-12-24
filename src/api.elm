@@ -4,7 +4,7 @@ import Http
 import HttpBuilder exposing (..)
 import Model exposing (..)
 import Json.Decode exposing (..)
-import Json.Decode.Extra exposing (date)
+import Json.Decode.Extra exposing (datetime)
 
 getEntries : Cmd ApiMsg
 getEntries =
@@ -45,7 +45,7 @@ entryDecoder =
     map3 Entry
     (field "id" string)
     (field "content" string)
-    (field "date" date)
+    (field "date" datetime)
 
 entriesDecoder : Decoder (List Entry)
 entriesDecoder = list entryDecoder
